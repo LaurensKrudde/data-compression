@@ -1,6 +1,8 @@
 import matplotlib.image as mplimg
 import numpy as np
 from cs_utils import *
+from OMP import OMP
+from ISTA import ISTA
 
 
 # S is assumed to be a vector
@@ -17,72 +19,6 @@ def DMD_matrix(M, N):
 
 def CS_matrix(DMD, U_kron_U):
     return DMD @ U_kron_U
-
-
-def OMP(y, A, eps):
-    N = np.size(A, 1)
-    M = len(y)
-
-    z = np.zeros(N)
-    Lambda_set = set()
-    r = y
-
-    i = 0
-
-    while np.linalg.norm(r, 2) > eps and i < M:
-
-        # Matching step
-        h = np.transpose(A) @ r
-
-        # Support identification step
-        k = np.argmax(h)
-
-        # Support augmentation step
-        Lambda_set.add(k)
-
-        # Update estimate of the sparse vector
-        A_Lambda = A[:, list(Lambda_set)]
-        z_Lambda = np.linalg.inv(A_Lambda.T @ A_Lambda) @ A_Lambda.T @ y
-        z[list(Lambda_set)] = z_Lambda
-
-        # Update residue
-        r = y - A @ z
-
-        i += 1
-
-    print(f"Stopped after {i} iterations.")
-    return z
-
-
-def shrinkage_operation(x, eta, lam):
-    for i in range(len(x)):
-        if x[i] > lam * eta:
-            x[i] -= lam * eta
-        elif x[i] < lam * eta:
-            x[i] += lam * eta
-        else:
-            x[i] = 0
-    return x
-
-
-def ISTA(y, A, eps):
-
-    eta = 0.01
-    lam = 1
-    error = 1.0
-
-    M = len(A)
-    N = len(A[0])
-
-    z = np.zeros(N)
-
-    while error > eps:
-
-        p = z - 2 * eta * A.T @ (A @ z - y)
-
-        z = shrinkage_operation(p, eta, lam)
-
-        error = np.linalg.norm(y - A @ z, ord=2)**2 + lam * np.linalg.norm(z, ord=1)
 
 
 if __name__ == '__main__':
