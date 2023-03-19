@@ -10,7 +10,7 @@ def K_sparse_approx_using_id(S, K):
     X = S
 
     # For K-sparse approximation, take the K largest values
-    indices = np.argpartition(X, -K)[-K:]
+    indices = np.argpartition(abs(X), -K)[-K:]
     values = X[indices]
 
     # Make sparse matrix by setting all values to 0 except the K largest values
@@ -27,7 +27,7 @@ def K_sparse_approx_using_2ddct(S, K):
     X = U_kron_U @ S
 
     # For K-sparse approximation, take the K largest values
-    indices = np.argpartition(X, -K)[-K:]
+    indices = np.argpartition(abs(X), -K)[-K:]
     values = X[indices]
 
     # Make sparse matrix by setting all values to 0 except the K largest values
@@ -64,8 +64,7 @@ if __name__ == '__main__':
     MSE_id = []
     MSE_2ddct = []
 
-    K_range = np.arange(2, 1024, 2)
-
+    K_range = np.arange(1, 1024, 8)
     for K in K_range:
 
         error_id = 0
@@ -73,13 +72,8 @@ if __name__ == '__main__':
 
         for patch in patch_list:
 
-            # Vectorize the patch
+            # MSE error
             S = patch.flatten()
-
-            # Normalize
-            S = S / 255
-
-            # MSE dB error
             error_id += MSE_using_id(S, K)
             error_2ddct += MSE_using_2DDCT(S, K)
 
